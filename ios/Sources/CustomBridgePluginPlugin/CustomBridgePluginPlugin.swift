@@ -1,23 +1,20 @@
-import Foundation
 import Capacitor
 
-/**
- * Please read the Capacitor iOS Plugin Development Guide
- * here: https://capacitorjs.com/docs/plugins/ios
- */
 @objc(CustomBridgePluginPlugin)
-public class CustomBridgePluginPlugin: CAPPlugin, CAPBridgedPlugin {
-    public let identifier = "CustomBridgePluginPlugin"
-    public let jsName = "CustomBridgePlugin"
-    public let pluginMethods: [CAPPluginMethod] = [
-        CAPPluginMethod(name: "echo", returnType: CAPPluginReturnPromise)
-    ]
-    private let implementation = CustomBridgePlugin()
+public class CustomBridgePluginPlugin: CAPPlugin {
+    override public func load() {
+        // Customize the bridged web view
+        bridge?.webView?.frame.origin = CGPoint(x: 0, y: getStatusBarHeight())
+        bridge?.webView?.frame.size.height = UIScreen.main.bounds.size.height - getStatusBarHeight() - getBottomSafeAreaInset()
+    }
 
-    @objc func echo(_ call: CAPPluginCall) {
-        let value = call.getString("value") ?? ""
-        call.resolve([
-            "value": implementation.echo(value)
-        ])
+    private func getStatusBarHeight() -> CGFloat {
+        let window = UIApplication.shared.windows.filter { $0.isKeyWindow }.first
+        return window?.windowScene?.statusBarManager?.statusBarFrame.height ?? 0
+    }
+
+    private func getBottomSafeAreaInset() -> CGFloat {
+        let window = UIApplication.shared.windows.filter { $0.isKeyWindow }.first
+        return window?.safeAreaInsets.bottom ?? 0
     }
 }
